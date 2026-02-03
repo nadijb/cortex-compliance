@@ -1,22 +1,26 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { Agent, CreateAgentInput, UpdateAgentInput } from "@/types/agent";
 
 interface AgentContextType {
   agents: Agent[];
   loading: boolean;
   error: string | null;
-  getAgent: (id: string) => Agent | undefined;
+  getAgent: (id: string) => Promise<Agent | undefined>;
   createAgent: (input: CreateAgentInput) => Promise<Agent>;
   updateAgent: (input: UpdateAgentInput) => Promise<Agent>;
   deleteAgent: (id: string) => Promise<void>;
-  refreshAgents: () => void;
+  refreshAgents: () => Promise<void>;
 }
 
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
-
-const STORAGE_KEY = "cortex-workflow-agents";
 
 function generateId(): string {
   return `agent_${Date.now()}`;
@@ -27,81 +31,125 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load agents from localStorage on mount
-  useEffect(() => {
+  const fetchAgents = useCallback(async () => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setAgents(JSON.parse(stored));
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch("/api/agents");
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to fetch agents");
       }
+
+      const data = await response.json();
+      setAgents(data);
     } catch (err) {
-      console.error("Failed to load agents from storage:", err);
-      setError("Failed to load agents");
+      console.error("Failed to fetch agents:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch agents");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Save agents to localStorage whenever they change
+  // Load agents on mount
   useEffect(() => {
-    if (!loading) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(agents));
-    }
-  }, [agents, loading]);
+    fetchAgents();
+  }, [fetchAgents]);
 
-  const refreshAgents = useCallback(() => {
+  const refreshAgents = useCallback(async () => {
+    await fetchAgents();
+  }, [fetchAgents]);
+
+  const getAgent = useCallback(async (id: string): Promise<Agent | undefined> => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setAgents(JSON.parse(stored));
+      const response = await fetch(`/api/agents/${id}`);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to fetch agent");
       }
+
+      return await response.json();
     } catch (err) {
-      console.error("Failed to refresh agents:", err);
+      console.error("Failed to fetch agent:", err);
+      return undefined;
     }
   }, []);
 
-  const getAgent = useCallback(
-    (id: string) => {
-      return agents.find((agent) => agent.agent_id === id);
+  const createAgent = useCallback(
+    async (input: CreateAgentInput): Promise<Agent> => {
+      const agentId = generateId();
+
+      const response = await fetch("/api/agents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          agent_id: agentId,
+          ...input,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create agent");
+      }
+
+      const newAgent: Agent = {
+        agent_id: agentId,
+        ...input,
+      };
+
+      // Refresh the agents list
+      await fetchAgents();
+
+      return newAgent;
     },
-    [agents]
+    [fetchAgents]
   );
 
-  const createAgent = useCallback(async (input: CreateAgentInput): Promise<Agent> => {
-    const newAgent: Agent = {
-      ...input,
-      agent_id: generateId(),
-    };
-
-    setAgents((prev) => [...prev, newAgent]);
-    return newAgent;
-  }, []);
-
-  const updateAgent = useCallback(async (input: UpdateAgentInput): Promise<Agent> => {
-    return new Promise((resolve, reject) => {
-      setAgents((prev) => {
-        const index = prev.findIndex((agent) => agent.agent_id === input.agent_id);
-        if (index === -1) {
-          reject(new Error("Agent not found"));
-          return prev;
-        }
-
-        const updatedAgent: Agent = {
-          ...prev[index],
-          ...input,
-        };
-
-        const newAgents = [...prev];
-        newAgents[index] = updatedAgent;
-        resolve(updatedAgent);
-        return newAgents;
+  const updateAgent = useCallback(
+    async (input: UpdateAgentInput): Promise<Agent> => {
+      const response = await fetch(`/api/agents/${input.agent_id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
       });
-    });
-  }, []);
 
-  const deleteAgent = useCallback(async (id: string): Promise<void> => {
-    setAgents((prev) => prev.filter((agent) => agent.agent_id !== id));
-  }, []);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update agent");
+      }
+
+      // Refresh the agents list
+      await fetchAgents();
+
+      // Find and return the updated agent
+      const updatedAgent = agents.find((a) => a.agent_id === input.agent_id);
+      return updatedAgent || ({ ...input } as Agent);
+    },
+    [fetchAgents, agents]
+  );
+
+  const deleteAgent = useCallback(
+    async (id: string): Promise<void> => {
+      const response = await fetch(`/api/agents/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete agent");
+      }
+
+      // Refresh the agents list
+      await fetchAgents();
+    },
+    [fetchAgents]
+  );
 
   return (
     <AgentContext.Provider

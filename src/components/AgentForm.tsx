@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Agent, ExecutionLink, CreateAgentInput } from "@/types/agent";
+import { Agent, Execution, CreateAgentInput } from "@/types/agent";
 import {
   metricsConfig,
   getDefaultMetrics,
@@ -42,27 +42,27 @@ export default function AgentForm({ agent, mode }: AgentFormProps) {
   const [description, setDescription] = useState(agent?.description || "");
   const [status, setStatus] = useState(agent?.status ?? true);
   const [workflowId, setWorkflowId] = useState(agent?.workflow_id || "");
-  const [executions, setExecutions] = useState<ExecutionLink[]>(
+  const [executions, setExecutions] = useState<Execution[]>(
     agent?.executions || []
   );
   const [metrics, setMetrics] = useState<string[]>(
     agent?.metrics || getDefaultMetrics()
   );
 
-  const [newExecutionUrl, setNewExecutionUrl] = useState("");
+  const [newExecutionValue, setNewExecutionValue] = useState("");
   const [newExecutionLabel, setNewExecutionLabel] = useState("");
 
   const handleAddExecution = () => {
-    if (!newExecutionUrl.trim()) return;
+    if (!newExecutionValue.trim()) return;
 
-    const newExecution: ExecutionLink = {
+    const newExecution: Execution = {
       id: `exec_${Date.now()}`,
-      url: newExecutionUrl.trim(),
+      value: newExecutionValue.trim(),
       label: newExecutionLabel.trim() || undefined,
     };
 
     setExecutions([...executions, newExecution]);
-    setNewExecutionUrl("");
+    setNewExecutionValue("");
     setNewExecutionLabel("");
   };
 
@@ -166,12 +166,12 @@ export default function AgentForm({ agent, mode }: AgentFormProps) {
         </CardContent>
       </Card>
 
-      {/* Execution Links */}
+      {/* Executions */}
       <Card>
         <CardHeader>
-          <CardTitle>Execution Examples</CardTitle>
+          <CardTitle>Executions</CardTitle>
           <CardDescription>
-            Add links to execution examples for this agent
+            Add execution examples for this agent
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -189,7 +189,7 @@ export default function AgentForm({ agent, mode }: AgentFormProps) {
                       </p>
                     )}
                     <p className="text-sm text-muted-foreground truncate">
-                      {execution.url}
+                      {execution.value}
                     </p>
                   </div>
                   <Button
@@ -219,21 +219,20 @@ export default function AgentForm({ agent, mode }: AgentFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="executionUrl">URL</Label>
+            <Label htmlFor="executionValue">Value</Label>
             <div className="flex gap-2">
               <Input
-                id="executionUrl"
-                value={newExecutionUrl}
-                onChange={(e) => setNewExecutionUrl(e.target.value)}
-                placeholder="https://..."
-                type="url"
+                id="executionValue"
+                value={newExecutionValue}
+                onChange={(e) => setNewExecutionValue(e.target.value)}
+                placeholder="Enter execution value"
               />
               <Button
                 type="button"
                 variant="secondary"
                 className="cursor-pointer"
                 onClick={handleAddExecution}
-                disabled={!newExecutionUrl.trim()}
+                disabled={!newExecutionValue.trim()}
               >
                 Add
               </Button>

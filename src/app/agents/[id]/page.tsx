@@ -1,17 +1,31 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import AgentForm from "@/components/AgentForm";
 import { useAgents } from "@/context/AgentContext";
+import { Agent } from "@/types/agent";
 import Logo from "@/components/Logo";
 
 export default function EditAgentPage() {
   const params = useParams();
-  const { getAgent, loading } = useAgents();
+  const { getAgent } = useAgents();
   const id = params.id as string;
-  const agent = getAgent(id);
+
+  const [agent, setAgent] = useState<Agent | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAgent() {
+      setLoading(true);
+      const data = await getAgent(id);
+      setAgent(data);
+      setLoading(false);
+    }
+    fetchAgent();
+  }, [id, getAgent]);
 
   if (loading) {
     return (

@@ -4,7 +4,8 @@
       "Bash(npx create-next-app@latest:*)",
       "Bash(npx shadcn@latest init:*)",
       "Bash(npx shadcn@latest add button input textarea checkbox card badge switch label separator table dialog alert-dialog form -y)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

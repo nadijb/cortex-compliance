@@ -1,6 +1,6 @@
-export interface ExecutionLink {
+export interface Execution {
   id: string;
-  url: string;
+  value: string;
   label?: string;
 }
 
@@ -10,7 +10,7 @@ export interface Agent {
   description: string;
   status: boolean;
   workflow_id: string;
-  executions: ExecutionLink[];
+  executions: Execution[];
   metrics: string[]; // Format: "category:metric" e.g., "resilience:latency"
 }
 
@@ -19,7 +19,7 @@ export interface CreateAgentInput {
   description: string;
   status: boolean;
   workflow_id: string;
-  executions: ExecutionLink[];
+  executions: Execution[];
   metrics: string[];
 }
 

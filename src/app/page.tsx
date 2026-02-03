@@ -130,7 +130,7 @@ export default function HomePage() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">
-                            {agent.executions.length} link(s)
+                            {agent.executions.length}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
