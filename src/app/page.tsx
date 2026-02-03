@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getAllMetricKeys } from "@/config/metrics";
 import Logo from "@/components/Logo";
+import { Agent } from "@/types/agent";
 
 export default function HomePage() {
   const { agents, loading, deleteAgent } = useAgents();
@@ -61,17 +62,19 @@ export default function HomePage() {
           <Logo />
         </div>
       </header>
-      <div className="container mx-auto py-8 px-4">
+      <div className="container mx-auto py-4 sm:py-8 px-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <CardTitle className="text-2xl">AI Agents</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl">AI Agents</CardTitle>
               <CardDescription>
                 Manage your AI agents and their compliance metrics
               </CardDescription>
             </div>
-            <Link href="/agents/new">
-              <Button className="cursor-pointer">Create Agent</Button>
+            <Link href="/agents/new" className="w-full sm:w-auto">
+              <Button className="cursor-pointer w-full sm:w-auto">
+                Create Agent
+              </Button>
             </Link>
           </CardHeader>
           <CardContent>
@@ -87,107 +90,209 @@ export default function HomePage() {
                 </Link>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Workflow ID</TableHead>
-                    <TableHead>Metrics</TableHead>
-                    <TableHead>Executions</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {agents.map((agent) => {
-                    const metricsCount = getEnabledMetricsCount(agent.metrics);
-                    return (
-                      <TableRow key={agent.agent_id}>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{agent.name}</p>
-                            <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                              {agent.description}
-                            </p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={agent.status ? "default" : "secondary"}
-                          >
-                            {agent.status ? "Active" : "Inactive"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <code className="text-sm bg-muted px-2 py-1 rounded">
-                            {agent.workflow_id || "-"}
-                          </code>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">
-                            {metricsCount.enabled}/{metricsCount.total} enabled
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm">
-                            {agent.executions.length}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Link href={`/agents/${agent.agent_id}`}>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="cursor-pointer"
-                              >
-                                Edit
-                              </Button>
-                            </Link>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  className="cursor-pointer"
-                                >
-                                  Delete
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Delete Agent
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete &quot;
-                                    {agent.name}&quot;? This action cannot be
-                                    undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="cursor-pointer">
-                                    Cancel
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="cursor-pointer"
-                                    onClick={() => handleDelete(agent.agent_id)}
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
+              <>
+                {/* Mobile view - Card layout */}
+                <div className="block md:hidden space-y-4">
+                  {agents.map((agent) => (
+                    <MobileAgentCard
+                      key={agent.agent_id}
+                      agent={agent}
+                      metricsCount={getEnabledMetricsCount(agent.metrics)}
+                      onDelete={handleDelete}
+                    />
+                  ))}
+                </div>
+
+                {/* Desktop view - Table layout */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="hidden lg:table-cell">
+                          Workflow ID
+                        </TableHead>
+                        <TableHead>Metrics</TableHead>
+                        <TableHead className="hidden lg:table-cell">
+                          Executions
+                        </TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {agents.map((agent) => {
+                        const metricsCount = getEnabledMetricsCount(
+                          agent.metrics
+                        );
+                        return (
+                          <TableRow key={agent.agent_id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{agent.name}</p>
+                                <p className="text-sm text-muted-foreground truncate max-w-[200px]">
+                                  {agent.description}
+                                </p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={agent.status ? "default" : "secondary"}
+                              >
+                                {agent.status ? "Active" : "Inactive"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              <code className="text-sm bg-muted px-2 py-1 rounded">
+                                {agent.workflow_id || "-"}
+                              </code>
+                            </TableCell>
+                            <TableCell>
+                              <span className="text-sm">
+                                {metricsCount.enabled}/{metricsCount.total}
+                              </span>
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                              <span className="text-sm">
+                                {agent.executions.length}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Link href={`/agents/${agent.agent_id}`}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="cursor-pointer"
+                                  >
+                                    Edit
+                                  </Button>
+                                </Link>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="destructive"
+                                      size="sm"
+                                      className="cursor-pointer"
+                                    >
+                                      Delete
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Delete Agent
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Are you sure you want to delete &quot;
+                                        {agent.name}&quot;? This action cannot
+                                        be undone.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel className="cursor-pointer">
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        className="cursor-pointer"
+                                        onClick={() =>
+                                          handleDelete(agent.agent_id)
+                                        }
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
+      </div>
+    </div>
+  );
+}
+
+function MobileAgentCard({
+  agent,
+  metricsCount,
+  onDelete,
+}: {
+  agent: Agent;
+  metricsCount: { enabled: number; total: number };
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="border rounded-lg p-4 space-y-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-medium truncate">{agent.name}</p>
+          {agent.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {agent.description}
+            </p>
+          )}
+        </div>
+        <Badge variant={agent.status ? "default" : "secondary"}>
+          {agent.status ? "Active" : "Inactive"}
+        </Badge>
+      </div>
+
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+        <span>
+          Metrics: {metricsCount.enabled}/{metricsCount.total}
+        </span>
+        <span>Executions: {agent.executions.length}</span>
+        {agent.workflow_id && (
+          <span className="truncate">Workflow: {agent.workflow_id}</span>
+        )}
+      </div>
+
+      <div className="flex gap-2 pt-2">
+        <Link href={`/agents/${agent.agent_id}`} className="flex-1">
+          <Button variant="outline" size="sm" className="cursor-pointer w-full">
+            Edit
+          </Button>
+        </Link>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="cursor-pointer flex-1"
+            >
+              Delete
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Agent</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete &quot;{agent.name}&quot;? This
+                action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+              <AlertDialogCancel className="cursor-pointer">
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="cursor-pointer"
+                onClick={() => onDelete(agent.agent_id)}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
