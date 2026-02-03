@@ -16,7 +16,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Agent, Execution, CreateAgentInput } from "@/types/agent";
+import {
+  Agent,
+  Execution,
+  CreateAgentInput,
+  ImpactLevel,
+  RealTimeClass,
+  ActionType,
+} from "@/types/agent";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   metricsConfig,
   getDefaultMetrics,
@@ -47,6 +61,23 @@ export default function AgentForm({ agent, mode }: AgentFormProps) {
   );
   const [metrics, setMetrics] = useState<string[]>(
     agent?.metrics || getDefaultMetrics()
+  );
+  const [impactLevel, setImpactLevel] = useState<ImpactLevel>(
+    agent?.impact_level || "low"
+  );
+  const [realTimeClass, setRealTimeClass] = useState<RealTimeClass>(
+    agent?.real_time_class || "Not Real Time"
+  );
+  const [actionType, setActionType] = useState<ActionType>(
+    agent?.action_type || "Decision Support"
+  );
+  const [llmCalls, setLlmCalls] = useState(agent?.llm_calls || 0);
+  const [apiCalls, setApiCalls] = useState(agent?.api_calls || 0);
+  const [errorPointsIdentified, setErrorPointsIdentified] = useState(
+    agent?.error_points_identified || 0
+  );
+  const [errorPointsImplemented, setErrorPointsImplemented] = useState(
+    agent?.error_points_implemented || 0
   );
 
   const [newExecutionValue, setNewExecutionValue] = useState("");
@@ -94,6 +125,13 @@ export default function AgentForm({ agent, mode }: AgentFormProps) {
         workflow_id: workflowId,
         executions,
         metrics,
+        impact_level: impactLevel,
+        real_time_class: realTimeClass,
+        action_type: actionType,
+        llm_calls: llmCalls,
+        api_calls: apiCalls,
+        error_points_identified: errorPointsIdentified,
+        error_points_implemented: errorPointsImplemented,
       };
 
       if (mode === "create") {
@@ -162,6 +200,145 @@ export default function AgentForm({ agent, mode }: AgentFormProps) {
               onChange={(e) => setWorkflowId(e.target.value)}
               placeholder="Enter n8n workflow ID"
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Agent Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Agent Configuration</CardTitle>
+          <CardDescription>
+            Configure the operational parameters of your AI agent
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="impactLevel">Impact Level</Label>
+              <Select
+                value={impactLevel}
+                onValueChange={(value) => setImpactLevel(value as ImpactLevel)}
+              >
+                <SelectTrigger id="impactLevel">
+                  <SelectValue placeholder="Select impact level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="realTimeClass">Real Time Class</Label>
+              <Select
+                value={realTimeClass}
+                onValueChange={(value) =>
+                  setRealTimeClass(value as RealTimeClass)
+                }
+              >
+                <SelectTrigger id="realTimeClass">
+                  <SelectValue placeholder="Select real time class" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Real Time">Real Time</SelectItem>
+                  <SelectItem value="Near Real Time">Near Real Time</SelectItem>
+                  <SelectItem value="Not Real Time">Not Real Time</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="actionType">Action Type</Label>
+              <Select
+                value={actionType}
+                onValueChange={(value) => setActionType(value as ActionType)}
+              >
+                <SelectTrigger id="actionType">
+                  <SelectValue placeholder="Select action type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Live Chatbot">Live Chatbot</SelectItem>
+                  <SelectItem value="Decision Support">
+                    Decision Support
+                  </SelectItem>
+                  <SelectItem value="Guidance / Instruction">
+                    Guidance / Instruction
+                  </SelectItem>
+                  <SelectItem value="Predictions / Scoring">
+                    Predictions / Scoring
+                  </SelectItem>
+                  <SelectItem value="Execution / Automation">
+                    Execution / Automation
+                  </SelectItem>
+                  <SelectItem value="Personalised Profiling">
+                    Personalised Profiling
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <Separator />
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-2">
+              <Label htmlFor="llmCalls">LLM Calls</Label>
+              <Input
+                id="llmCalls"
+                type="number"
+                min="0"
+                value={llmCalls}
+                onChange={(e) => setLlmCalls(parseInt(e.target.value) || 0)}
+                placeholder="0"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="apiCalls">API Calls</Label>
+              <Input
+                id="apiCalls"
+                type="number"
+                min="0"
+                value={apiCalls}
+                onChange={(e) => setApiCalls(parseInt(e.target.value) || 0)}
+                placeholder="0"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="errorPointsIdentified">
+                Error Points Identified
+              </Label>
+              <Input
+                id="errorPointsIdentified"
+                type="number"
+                min="0"
+                value={errorPointsIdentified}
+                onChange={(e) =>
+                  setErrorPointsIdentified(parseInt(e.target.value) || 0)
+                }
+                placeholder="0"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="errorPointsImplemented">
+                Error Points Implemented
+              </Label>
+              <Input
+                id="errorPointsImplemented"
+                type="number"
+                min="0"
+                value={errorPointsImplemented}
+                onChange={(e) =>
+                  setErrorPointsImplemented(parseInt(e.target.value) || 0)
+                }
+                placeholder="0"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -110,6 +110,7 @@ export default function HomePage() {
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Impact</TableHead>
                         <TableHead className="hidden lg:table-cell">
                           Workflow ID
                         </TableHead>
@@ -140,6 +141,22 @@ export default function HomePage() {
                                 variant={agent.status ? "default" : "secondary"}
                               >
                                 {agent.status ? "Active" : "Inactive"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  agent.impact_level === "high"
+                                    ? "destructive"
+                                    : agent.impact_level === "medium"
+                                      ? "default"
+                                      : "secondary"
+                                }
+                              >
+                                {agent.impact_level
+                                  ? agent.impact_level.charAt(0).toUpperCase() +
+                                    agent.impact_level.slice(1)
+                                  : "-"}
                               </Badge>
                             </TableCell>
                             <TableCell className="hidden lg:table-cell">
@@ -241,9 +258,25 @@ function MobileAgentCard({
             </p>
           )}
         </div>
-        <Badge variant={agent.status ? "default" : "secondary"}>
-          {agent.status ? "Active" : "Inactive"}
-        </Badge>
+        <div className="flex flex-col gap-1 items-end">
+          <Badge variant={agent.status ? "default" : "secondary"}>
+            {agent.status ? "Active" : "Inactive"}
+          </Badge>
+          <Badge
+            variant={
+              agent.impact_level === "high"
+                ? "destructive"
+                : agent.impact_level === "medium"
+                  ? "default"
+                  : "secondary"
+            }
+          >
+            {agent.impact_level
+              ? agent.impact_level.charAt(0).toUpperCase() +
+                agent.impact_level.slice(1)
+              : "-"}
+          </Badge>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">

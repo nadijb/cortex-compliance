@@ -59,6 +59,13 @@ export async function PUT(
         workflow_id: body.workflow_id,
         metrics: body.metrics,
         executions: body.executions,
+        impact_level: body.impact_level,
+        real_time_class: body.real_time_class,
+        action_type: body.action_type,
+        llm_calls: body.llm_calls,
+        api_calls: body.api_calls,
+        error_points_identified: body.error_points_identified,
+        error_points_implemented: body.error_points_implemented,
       }),
     });
 
