@@ -52,3 +52,13 @@ export interface CreateAgentInput {
 export interface UpdateAgentInput extends Partial<CreateAgentInput> {
   agent_id: string;
 }
+
+export interface ComplianceStatus {
+  agent_id: string;
+  metric: string;
+  status: "PASS" | "FAIL";
+  action_required: string;
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+}

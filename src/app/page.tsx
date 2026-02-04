@@ -176,6 +176,15 @@ export default function HomePage() {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
+                                <Link href={`/agents/${agent.agent_id}/view`}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="cursor-pointer"
+                                  >
+                                    View
+                                  </Button>
+                                </Link>
                                 <Link href={`/agents/${agent.agent_id}`}>
                                   <Button
                                     variant="outline"
@@ -290,6 +299,11 @@ function MobileAgentCard({
       </div>
 
       <div className="flex gap-2 pt-2">
+        <Link href={`/agents/${agent.agent_id}/view`} className="flex-1">
+          <Button variant="outline" size="sm" className="cursor-pointer w-full">
+            View
+          </Button>
+        </Link>
         <Link href={`/agents/${agent.agent_id}`} className="flex-1">
           <Button variant="outline" size="sm" className="cursor-pointer w-full">
             Edit
