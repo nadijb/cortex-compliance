@@ -16,9 +16,17 @@ import { Separator } from "@/components/ui/separator";
 import { Agent, ComplianceStatus } from "@/types/agent";
 import { metricsConfig } from "@/config/metrics";
 import Logo from "@/components/Logo";
-import { RefreshCw, ArrowLeft, CheckCircle2, XCircle, MinusCircle, AlertTriangle, OctagonX } from "lucide-react";
+import {
+  RefreshCw,
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+  AlertTriangle,
+  OctagonX,
+} from "lucide-react";
 
-const POLLING_INTERVAL = 30000; // 30 seconds
+const POLLING_INTERVAL = 3000;
 
 export default function ViewAgentPage({
   params,
@@ -28,7 +36,9 @@ export default function ViewAgentPage({
   const { id } = use(params);
   const router = useRouter();
   const [agent, setAgent] = useState<Agent | null>(null);
-  const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus[]>([]);
+  const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,20 +102,29 @@ export default function ViewAgentPage({
     const isSelected = agent?.metrics.includes(metricString);
 
     if (!isSelected) {
-      return { status: "NOT_SELECTED", label: "Not Selected", actionRequired: null };
+      return {
+        status: "NOT_SELECTED",
+        label: "Not Selected",
+        actionRequired: null,
+      };
     }
 
     // Check if we have a compliance status for this metric
     const status = complianceStatus.find((s) => s.metric === metricString);
 
     if (!status) {
-      return { status: "NOT_ASSESSED", label: "Not Assessed", actionRequired: null };
+      return {
+        status: "NOT_ASSESSED",
+        label: "Not Assessed",
+        actionRequired: null,
+      };
     }
 
     // Only return action_required if it's not "NONE"
-    const actionRequired = status.action_required && status.action_required !== "NONE"
-      ? status.action_required
-      : null;
+    const actionRequired =
+      status.action_required && status.action_required !== "NONE"
+        ? status.action_required
+        : null;
 
     return { status: status.status, label: status.status, actionRequired };
   };
@@ -130,7 +149,10 @@ export default function ViewAgentPage({
         );
       case "NOT_ASSESSED":
         return (
-          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+          <Badge
+            variant="secondary"
+            className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+          >
             <MinusCircle className="w-3 h-3 mr-1" />
             {label}
           </Badge>
@@ -159,21 +181,19 @@ export default function ViewAgentPage({
       case "NOTIFY":
         return {
           title: "Notify Supervisor",
-          description: "This metric requires supervisor review and notification.",
+          description:
+            "This metric requires supervisor review and notification.",
           severity: "warning" as const,
         };
       case "STOP":
         return {
           title: "Stop Agent",
-          description: "This metric failure requires the agent to be stopped immediately.",
+          description:
+            "This metric failure requires the agent to be stopped immediately.",
           severity: "critical" as const,
         };
       default:
-        return {
-          title: "Action Required",
-          description: action,
-          severity: "warning" as const,
-        };
+        return null;
     }
   };
 
@@ -213,7 +233,9 @@ export default function ViewAgentPage({
               </Button>
             </Link>
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold truncate">{agent.name}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold truncate">
+                {agent.name}
+              </h1>
               {agent.description && (
                 <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-none">
                   {agent.description}
@@ -228,10 +250,15 @@ export default function ViewAgentPage({
               disabled={refreshing}
               className="cursor-pointer w-full sm:w-auto"
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              />
               Refresh Status
             </Button>
-            <Link href={`/agents/${agent.agent_id}`} className="w-full sm:w-auto">
+            <Link
+              href={`/agents/${agent.agent_id}`}
+              className="w-full sm:w-auto"
+            >
               <Button variant="outline" className="cursor-pointer w-full">
                 Edit Agent
               </Button>
@@ -243,7 +270,9 @@ export default function ViewAgentPage({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg sm:text-xl">Agent Details</CardTitle>
-            <CardDescription>General information about this agent</CardDescription>
+            <CardDescription>
+              General information about this agent
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Status badges row - always visible at top on mobile */}
@@ -266,7 +295,8 @@ export default function ViewAgentPage({
                   }
                 >
                   {agent.impact_level
-                    ? agent.impact_level.charAt(0).toUpperCase() + agent.impact_level.slice(1)
+                    ? agent.impact_level.charAt(0).toUpperCase() +
+                      agent.impact_level.slice(1)
                     : "-"}
                 </Badge>
               </div>
@@ -277,19 +307,27 @@ export default function ViewAgentPage({
             {/* Details grid */}
             <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Real Time Class</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Real Time Class
+                </p>
                 <p className="text-sm">{agent.real_time_class || "-"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Action Type</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Action Type
+                </p>
                 <p className="text-sm">{agent.action_type || "-"}</p>
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Executions</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Executions
+                </p>
                 <p className="text-sm">{agent.executions.length}</p>
               </div>
               <div className="space-y-1 col-span-2 sm:col-span-3">
-                <p className="text-xs font-medium text-muted-foreground">Workflow ID</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Workflow ID
+                </p>
                 <code className="text-xs sm:text-sm bg-muted px-2 py-1 rounded block truncate">
                   {agent.workflow_id || "-"}
                 </code>
@@ -301,20 +339,36 @@ export default function ViewAgentPage({
             {/* Stats grid */}
             <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
               <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-xs font-medium text-muted-foreground">LLM Calls</p>
-                <p className="text-xl sm:text-2xl font-bold">{agent.llm_calls}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  LLM Calls
+                </p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {agent.llm_calls}
+                </p>
               </div>
               <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-xs font-medium text-muted-foreground">API Calls</p>
-                <p className="text-xl sm:text-2xl font-bold">{agent.api_calls}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  API Calls
+                </p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {agent.api_calls}
+                </p>
               </div>
               <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-xs font-medium text-muted-foreground">Errors Identified</p>
-                <p className="text-xl sm:text-2xl font-bold">{agent.error_points_identified}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Errors Identified
+                </p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {agent.error_points_identified}
+                </p>
               </div>
               <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-xs font-medium text-muted-foreground">Errors Implemented</p>
-                <p className="text-xl sm:text-2xl font-bold">{agent.error_points_implemented}</p>
+                <p className="text-xs font-medium text-muted-foreground">
+                  Errors Implemented
+                </p>
+                <p className="text-xl sm:text-2xl font-bold">
+                  {agent.error_points_implemented}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -323,7 +377,9 @@ export default function ViewAgentPage({
         {/* Compliance Status */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg sm:text-xl">Compliance Status</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">
+              Compliance Status
+            </CardTitle>
             <CardDescription className="text-xs sm:text-sm">
               Assessment results for selected metrics (auto-refreshes every 30s)
             </CardDescription>
@@ -332,15 +388,23 @@ export default function ViewAgentPage({
             {metricsConfig.map((category) => (
               <div key={category.key} className="space-y-3">
                 <div>
-                  <h3 className="text-sm sm:text-base font-semibold">{category.name}</h3>
+                  <h3 className="text-sm sm:text-base font-semibold">
+                    {category.name}
+                  </h3>
                   {category.description && (
-                    <p className="text-xs sm:text-sm text-muted-foreground">{category.description}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {category.description}
+                    </p>
                   )}
                 </div>
                 <div className="grid gap-2">
                   {category.metrics.map((metric) => {
-                    const actionRequired = getActionRequired(category.key, metric.key);
-                    const actionMessage = getActionRequiredMessage(actionRequired);
+                    const actionRequired = getActionRequired(
+                      category.key,
+                      metric.key,
+                    );
+                    const actionMessage =
+                      getActionRequiredMessage(actionRequired);
                     return (
                       <div
                         key={`${category.key}:${metric.key}`}
@@ -349,7 +413,9 @@ export default function ViewAgentPage({
                         {/* Mobile: Stack layout, Desktop: Row layout */}
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                           <div className="space-y-1 flex-1 min-w-0">
-                            <p className="text-sm font-medium">{metric.label}</p>
+                            <p className="text-sm font-medium">
+                              {metric.label}
+                            </p>
                             {metric.description && (
                               <p className="text-xs text-muted-foreground hidden sm:block">
                                 {metric.description}
