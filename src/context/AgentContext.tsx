@@ -31,12 +31,28 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const getAuthHeaders = useCallback((): Record<string, string> => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      return { Authorization: `Basic ${token}` };
+    }
+    return {};
+  }, []);
+
   const fetchAgents = useCallback(async () => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch("/api/agents");
+      const response = await fetch("/api/agents", {
+        headers: { Authorization: `Basic ${token}` },
+      });
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || "Failed to fetch agents");
@@ -63,7 +79,9 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
 
   const getAgent = useCallback(async (id: string): Promise<Agent | undefined> => {
     try {
-      const response = await fetch(`/api/agents/${id}`);
+      const response = await fetch(`/api/agents/${id}`, {
+        headers: { ...getAuthHeaders() },
+      });
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || "Failed to fetch agent");
@@ -84,6 +102,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({
           agent_id: agentId,
@@ -115,6 +134,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify(input),
       });
@@ -138,6 +158,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     async (id: string): Promise<void> => {
       const response = await fetch(`/api/agents/${id}`, {
         method: "DELETE",
+        headers: { ...getAuthHeaders() },
       });
 
       if (!response.ok) {

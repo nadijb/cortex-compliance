@@ -3,12 +3,18 @@ import { NextRequest, NextResponse } from "next/server";
 const API_BASE_URL = process.env.N8N_API_URL;
 
 // GET /api/agents - List all agents
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const response = await fetch(`${API_BASE_URL}?action=list-agents`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: authHeader,
       },
     });
 
@@ -36,10 +42,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const response = await fetch(`${API_BASE_URL}?action=create-agent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: authHeader,
       },
       body: JSON.stringify({
         agent_id: body.agent_id,

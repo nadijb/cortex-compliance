@@ -16,6 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import { Agent, ComplianceStatus } from "@/types/agent";
 import { metricsConfig } from "@/config/metrics";
 import Logo from "@/components/Logo";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/context/AuthContext";
 import {
   RefreshCw,
   ArrowLeft,
@@ -35,6 +37,7 @@ export default function ViewAgentPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { logout } = useAuth();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [complianceStatus, setComplianceStatus] = useState<ComplianceStatus[]>(
     [],
@@ -43,9 +46,19 @@ export default function ViewAgentPage({
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getAuthHeaders = useCallback((): Record<string, string> => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      return { Authorization: `Basic ${token}` };
+    }
+    return {};
+  }, []);
+
   const fetchAgent = useCallback(async () => {
     try {
-      const response = await fetch(`/api/agents/${id}`);
+      const response = await fetch(`/api/agents/${id}`, {
+        headers: { ...getAuthHeaders() },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch agent");
       }
@@ -59,7 +72,9 @@ export default function ViewAgentPage({
 
   const fetchComplianceStatus = useCallback(async () => {
     try {
-      const response = await fetch(`/api/agents/${id}/status`);
+      const response = await fetch(`/api/agents/${id}/status`, {
+        headers: { ...getAuthHeaders() },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch compliance status");
       }
@@ -199,28 +214,41 @@ export default function ViewAgentPage({
 
   if (loading) {
     return (
+      <ProtectedRoute>
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Loading agent...</p>
       </div>
+      </ProtectedRoute>
     );
   }
 
   if (error || !agent) {
     return (
+      <ProtectedRoute>
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-destructive">{error || "Agent not found"}</p>
         <Button variant="outline" onClick={() => router.push("/")}>
           Go Back
         </Button>
       </div>
+      </ProtectedRoute>
     );
   }
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <header className="border-b bg-white">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Logo />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={logout}
+            className="cursor-pointer"
+          >
+            Logout
+          </Button>
         </div>
       </header>
       <div className="container mx-auto py-4 sm:py-8 px-4 space-y-6">
@@ -473,5 +501,6 @@ export default function ViewAgentPage({
         </Card>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

@@ -8,12 +8,18 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
     const response = await fetch(`${API_BASE_URL}?action=get-agent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: authHeader,
       },
       body: JSON.stringify({ agent_id: id }),
     });
@@ -43,6 +49,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
 
@@ -50,6 +61,7 @@ export async function PUT(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: authHeader,
       },
       body: JSON.stringify({
         agent_id: id,
@@ -94,12 +106,18 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
     const response = await fetch(`${API_BASE_URL}?action=delete-agent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: authHeader,
       },
       body: JSON.stringify({ agent_id: id }),
     });

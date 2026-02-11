@@ -4,9 +4,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import AgentForm from "@/components/AgentForm";
 import Logo from "@/components/Logo";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function NewAgentPage() {
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <header className="border-b bg-white">
         <div className="container mx-auto px-4 py-4">
@@ -31,5 +33,6 @@ export default function NewAgentPage() {
         <AgentForm mode="create" />
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

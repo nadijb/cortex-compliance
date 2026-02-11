@@ -8,12 +8,18 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authHeader = request.headers.get("authorization");
+    if (!authHeader) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
 
     const response = await fetch(`${API_BASE_URL}?action=get-status`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: authHeader,
       },
       body: JSON.stringify({ agent_id: id }),
     });

@@ -8,6 +8,7 @@ import AgentForm from "@/components/AgentForm";
 import { useAgents } from "@/context/AgentContext";
 import { Agent } from "@/types/agent";
 import Logo from "@/components/Logo";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function EditAgentPage() {
   const params = useParams();
@@ -29,14 +30,17 @@ export default function EditAgentPage() {
 
   if (loading) {
     return (
+      <ProtectedRoute>
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Loading agent...</p>
       </div>
+      </ProtectedRoute>
     );
   }
 
   if (!agent) {
     return (
+      <ProtectedRoute>
       <div className="min-h-screen bg-background">
         <header className="border-b bg-white">
           <div className="container mx-auto px-4 py-4">
@@ -57,10 +61,12 @@ export default function EditAgentPage() {
           </div>
         </div>
       </div>
+      </ProtectedRoute>
     );
   }
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <header className="border-b bg-white">
         <div className="container mx-auto px-4 py-4">
@@ -85,5 +91,6 @@ export default function EditAgentPage() {
         <AgentForm mode="edit" agent={agent} />
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

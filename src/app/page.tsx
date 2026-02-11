@@ -33,9 +33,12 @@ import {
 import { getAllMetricKeys } from "@/config/metrics";
 import Logo from "@/components/Logo";
 import { Agent } from "@/types/agent";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HomePage() {
   const { agents, loading, deleteAgent } = useAgents();
+  const { logout } = useAuth();
 
   const getEnabledMetricsCount = (metrics: string[]) => {
     const total = getAllMetricKeys().length;
@@ -56,10 +59,19 @@ export default function HomePage() {
   }
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen bg-background">
       <header className="border-b bg-white">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Logo />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={logout}
+            className="cursor-pointer"
+          >
+            Logout
+          </Button>
         </div>
       </header>
       <div className="container mx-auto py-4 sm:py-8 px-4">
@@ -244,6 +256,7 @@ export default function HomePage() {
         </Card>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
 
